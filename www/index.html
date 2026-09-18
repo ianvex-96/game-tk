@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>Game TK NAFIL</title>
     <style>
-        /* --- CSS Reset untuk Layar Penuh Mutlak --- */
+        /* --- STREAMING_CHUNK:Styling layout and responsive elements... --- */
         * {
             margin: 0;
             padding: 0;
@@ -277,7 +277,38 @@
     </div>
 
     <script>
-        /* --- Sistem Suara Anti-Blokir Android --- */
+        /* --- STREAMING_CHUNK:Initializing audio and speech synthesis logic... --- */
+        let audioCtx = null;
+
+        function playSound(type) {
+            try {
+                if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                if (audioCtx.state === 'suspended') audioCtx.resume();
+
+                let osc = audioCtx.createOscillator();
+                let gain = audioCtx.createGain();
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+
+                let now = audioCtx.currentTime;
+                if (type === 'correct') {
+                    osc.frequency.setValueAtTime(440, now);
+                    osc.frequency.setValueAtTime(660, now + 0.1);
+                    gain.gain.setValueAtTime(0.2, now);
+                    gain.gain.exponentialRampToValueAtTime(0.01, now + 0.4);
+                    osc.start(now);
+                    osc.stop(now + 0.4);
+                } else if (type === 'wrong') {
+                    osc.frequency.setValueAtTime(220, now);
+                    osc.frequency.setValueAtTime(150, now + 0.15);
+                    gain.gain.setValueAtTime(0.2, now);
+                    gain.gain.exponentialRampToValueAtTime(0.01, now + 0.3);
+                    osc.start(now);
+                    osc.stop(now + 0.3);
+                }
+            } catch(e) {}
+        }
+
         let ttsUnlocked = false;
 
         function unlockAudio() {
@@ -290,7 +321,6 @@
         document.addEventListener('touchstart', unlockAudio, { once: true });
         document.addEventListener('click', unlockAudio, { once: true });
 
-        /* --- Fungsi Suara Utama --- */
         function speak(text) {
             if ('speechSynthesis' in window) {
                 window.speechSynthesis.cancel(); 
@@ -310,7 +340,7 @@
             if (currentLetterData) speak(`Huruf ${currentLetterData.letter} untuk apa?`);
         }
 
-        /* --- Logika Navigasi --- */
+        /* --- STREAMING_CHUNK:Defining navigation and game event handlers... --- */
         function openGame(gameType) {
             document.getElementById('main-menu').style.display = 'none';
             document.getElementById('btn-back').style.display = 'block';
@@ -377,11 +407,13 @@
 
         function checkAnswerMath(selectedNumber) {
             if(selectedNumber === currentAnswerMath) {
+                playSound('correct');
                 feedbackMath.style.color = "#32CD32";
                 feedbackMath.innerText = "Hore! Benar Sekali! 🎉";
                 speak(`Benar! Ada ${selectedNumber} apel!`);
                 setTimeout(startGameMath, 3000);
             } else {
+                playSound('wrong');
                 feedbackMath.style.color = "#FF0000";
                 feedbackMath.innerText = "Yah, coba lagi ya! 🤔";
                 speak("Yah, coba lagi!");
@@ -432,11 +464,13 @@
 
         function checkAnswerColor(selectedColor) {
             if(selectedColor.name === currentColorData.name) {
+                playSound('correct');
                 feedbackColor.style.color = "#32CD32";
                 feedbackColor.innerText = `Benar! Ini ${currentColorData.name}! 🎉`;
                 speak(`Ya! Ini ${currentColorData.name}!`);
                 setTimeout(startGameColor, 2500); 
             } else {
+                playSound('wrong');
                 feedbackColor.style.color = "#FF0000";
                 feedbackColor.innerText = `Bukan! Coba lagi! 🤔`;
                 speak("Bukan! Coba lagi!");
@@ -484,11 +518,13 @@
 
         function checkAnswerLetter(selectedLetterItem) {
             if(selectedLetterItem.letter === currentLetterData.letter) {
+                playSound('correct');
                 feedbackLetter.style.color = "#32CD32";
                 feedbackLetter.innerText = `Benar! ${currentLetterData.letter} untuk ${currentLetterData.word}! 🎉`;
-                speak(`Ya! ${currentLetterData.letter} untuk ${currentLetterData.word}!`);
+                speak(`Ya! ${currentLiteral = currentLetterData.letter} untuk ${currentLetterData.word}!`);
                 setTimeout(startGameLetter, 3000);
             } else {
+                playSound('wrong');
                 feedbackLetter.style.color = "#FF0000";
                 feedbackLetter.innerText = "Yah, salah! Coba lagi! 🤔";
                 speak("Yah, salah! Coba lagi!");
