@@ -1,4 +1,3 @@
-/* STREAMING_CHUNK:Configuring GitHub Actions workflow... */
 name: Build Android APK
 
 on:
