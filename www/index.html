@@ -2,578 +2,533 @@
 <html lang="id">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>Game TK NAFIL</title>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@700&display=swap');
-
+        /* --- CSS Reset untuk Layar Penuh Mutlak --- */
         * {
+            margin: 0;
+            padding: 0;
             box-sizing: border-box;
-            user-select: none;
-            -webkit-touch-callout: none;
-            -webkit-tap-highlight-color: transparent;
+            user-select: none; /* Cegah seleksi teks */
+            -webkit-tap-highlight-color: transparent; /* Hapus warna highlight tap di HP */
+        }
+
+        html, body {
+            width: 100vw;
+            height: 100vh;
+            overflow: hidden; /* Dilarang scroll */
+            position: relative;
+            background-color: #f0f0f0; /* Warna cadangan jika gradien gagal */
         }
 
         body {
-            /* Fallback offline font jika internet tidak ada */
-            font-family: 'Fredoka One', 'Comic Sans MS', cursive, sans-serif;
-            background-color: #222; /* Warna latar gelap (letterbox) jika rasio layar melebihi 9:16 */
-            margin: 0;
+            font-family: 'Comic Sans MS', 'Chalkboard SE', sans-serif;
+            background: linear-gradient(135deg, #FFDEE9 0%, #B5FFFC 100%); /* Gradien di body agar memenuhi layar */
             display: flex;
             justify-content: center;
             align-items: center;
-            height: 100vh;
-            width: 100vw;
             color: #333;
-            overflow: hidden;
-            touch-action: manipulation; /* Optimasi sentuhan di HP */
         }
 
+        /* --- Kontainer Utama --- */
         #app-container {
-            width: 100vw;
-            height: 100vh;
-            /* Rumus sakti untuk mengunci rasio tepat di 9:16 */
-            max-width: calc(100vh * (9 / 16));
-            max-height: calc(100vw * (16 / 9));
-            background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);
-            position: relative;
-            display: flex;
-            flex-direction: column;
-            box-shadow: 0 0 30px rgba(0,0,0,0.5);
-            overflow: hidden; /* Mencegah tumpah keluar wadah */
-        }
-
-        .screen {
-            display: none;
-            flex-direction: column;
-            align-items: center;
-            justify-content: space-evenly; /* Distribusi ruang merata otomatis, anti-scroll */
             width: 100%;
             height: 100%;
-            padding: 2vh 15px; /* Menggunakan persentase tinggi layar */
-            overflow: hidden; /* Menghilangkan scrollbar selamanya */
-        }
-
-        .screen.active {
+            padding: 20px;
             display: flex;
-            animation: fadeIn 0.3s ease-in-out;
-        }
-
-        @keyframes fadeIn {
-            from { opacity: 0; transform: scale(0.95); }
-            to { opacity: 1; transform: scale(1); }
-        }
-
-        h1 {
-            font-size: clamp(24px, 4vh, 32px); /* Teks membesar/mengecil mengikuti layar */
-            color: #FF6B6B;
-            margin: 0;
-            text-shadow: 2px 2px 0px #FFE66D;
-            letter-spacing: 2px;
-            text-align: center;
-        }
-
-        .subtitle {
-            font-size: clamp(14px, 2.5vh, 18px);
-            color: #4ECDC4;
-            margin: 0;
-            font-family: 'Nunito', 'Comic Sans MS', sans-serif;
-            text-align: center;
-        }
-
-        .question-text {
-            font-size: clamp(18px, 3vh, 24px);
-            color: #556270;
-            margin: 0;
-            text-align: center;
-            line-height: 1.2;
-            font-weight: bold;
-        }
-
-        .menu-btn {
-            width: 90%;
-            padding: 2.5vh 15px;
-            margin: 0;
-            border-radius: 20px;
-            border: none;
-            font-size: clamp(18px, 3vh, 22px);
-            font-family: 'Fredoka One', cursive;
-            color: white;
-            cursor: pointer;
-            box-shadow: 0 6px 0 rgba(0,0,0,0.15);
-            transition: transform 0.1s, box-shadow 0.1s;
-            display: flex;
+            flex-direction: column;
+            justify-content: flex-start; /* Elemen tersebar merata */
             align-items: center;
-            justify-content: center;
-            gap: 15px;
+            /* overflow: hidden; Hapus ini agar gradien body terlihat */
         }
 
-        .menu-btn:active {
-            transform: translateY(6px);
-            box-shadow: 0 0 0 rgba(0,0,0,0.15);
+        /* --- Pengaturan Konten --- */
+        .school-logo {
+            font-size: clamp(60px, 15vh, 120px); /* Ukuran logo dinamis berdasarkan tinggi layar */
+            margin-top: 5vh;
+            margin-bottom: 2vh;
         }
 
-        .btn-math { background-color: #FF6B6B; box-shadow: 0 6px 0 #D94848; }
-        .btn-color { background-color: #4ECDC4; box-shadow: 0 6px 0 #2CA8A0; }
-        .btn-abc { background-color: #FFE66D; color: #556270; box-shadow: 0 6px 0 #D9C24D; }
+        .title-text {
+            color: #FF6F61;
+            font-size: clamp(24px, 5vh, 48px);
+            margin-bottom: 1vh;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+        }
 
-        .header {
+        .subtitle-text {
+            color: #008080;
+            font-size: clamp(14px, 2.5vh, 22px);
+            margin-bottom: 5vh;
+        }
+
+        /* --- Kontainer Tombol Menu --- */
+        .menu-container {
             width: 100%;
             display: flex;
-            justify-content: space-between;
+            flex-direction: column;
+            gap: 2vh; /* Jarak antar tombol dinamis */
             align-items: center;
-            margin-bottom: 0;
+            padding-bottom: 5vh;
         }
 
-        .btn-back {
-            background-color: #f1f2f6;
-            color: #556270;
+        /* --- Tombol Menu --- */
+        .btn-menu {
+            width: 80%;
+            max-width: 350px;
+            height: clamp(50px, 9vh, 90px); /* Tinggi tombol dinamis */
+            border-radius: clamp(25px, 4.5vh, 45px); /* Border radius dinamis */
             border: none;
-            border-radius: 15px;
-            padding: 1.5vh 15px;
-            font-size: clamp(14px, 2.5vh, 18px);
-            font-family: 'Fredoka One', cursive;
-            cursor: pointer;
-            box-shadow: 0 4px 0 #dfe4ea;
-        }
-        
-        .btn-back:active {
-            transform: translateY(4px);
-            box-shadow: 0 0 0 #dfe4ea;
-        }
-
-        .score-badge {
-            background-color: #FFE66D;
-            color: #FF6B6B;
-            padding: 1vh 15px;
-            border-radius: 15px;
-            font-size: clamp(14px, 2.5vh, 18px);
-            border: 3px solid #fff;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            color: white;
+            font-size: clamp(18px, 3vh, 32px);
             font-weight: bold;
+            display: flex;
+            justify-content: flex-start;
+            align-items: center;
+            padding-left: clamp(15px, 3vh, 40px);
+            cursor: pointer;
+            box-shadow: 0 6px 10px rgba(0,0,0,0.15);
+            transition: transform 0.1s, box-shadow 0.1s;
         }
 
-        .game-display {
-            font-size: clamp(40px, 8vh, 70px);
-            margin: 0;
-            min-height: 12vh;
+        .btn-menu:active {
+            transform: translateY(4px);
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+
+        .btn-math { background-color: #FF6B6B; }
+        .btn-color { background-color: #4ECDC4; }
+        .btn-letter { background-color: #FFE66D; color: #555; }
+
+        .btn-icon {
+            font-size: clamp(20px, 4vh, 40px);
+            margin-right: clamp(10px, 2.5vh, 20px);
+        }
+
+        /* --- Kontainer Game-Game --- */
+        .game-view {
+            display: none; /* Sembunyikan semua game di awal */
+            width: 100%;
+            height: 100%;
+            position: absolute;
+            top: 0;
+            left: 0;
+            background: rgba(255,255,255,0.95);
+            backdrop-filter: blur(5px); /* Sedikit blur di belakang game */
+            flex-direction: column;
+            justify-content: flex-start;
+            align-items: center;
+            padding: 20px;
+            padding-top: 10vh; /* Ruang untuk tombol back */
+        }
+
+        /* --- Tombol Back --- */
+        #btn-back {
+            position: absolute;
+            top: 5vh;
+            left: 5vw;
+            padding: 10px 20px;
+            font-size: 20px;
+            background-color: rgba(0,0,0,0.6);
+            color: white;
+            border: none;
+            border-radius: 20px;
+            cursor: pointer;
+            z-index: 10;
+        }
+
+        /* --- Tampilan Game-Game Lainnya --- */
+        .game-title {
+            font-size: 28px;
+            color: #FF4500;
+            margin-bottom: 10px;
+        }
+
+        #feedback {
+            font-size: 24px;
+            font-weight: bold;
+            height: 35px;
+            margin-top: 20px;
+            color: #FF8C00;
+        }
+
+        .game-contents {
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            flex-grow: 1; /* Isi ruang tersisa */
+        }
+
+        .fruit-display {
+            font-size: 60px;
+            margin: 20px 0;
+            min-height: 90px;
             display: flex;
             justify-content: center;
             flex-wrap: wrap;
             gap: 10px;
-            align-items: center;
-            width: 100%;
-            background: #f8f9fa;
-            border-radius: 20px;
-            padding: 2vh;
-            border: 3px dashed #cbd5e1;
         }
 
-        .item-icon {
-            animation: bounce 2s infinite ease-in-out;
-        }
-
-        @keyframes bounce {
-            0%, 100% { transform: translateY(0); }
-            50% { transform: translateY(-10px); }
-        }
-
-        .options-grid {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 15px;
-            width: 100%;
-            margin: 0;
-        }
-
-        .options-row {
+        .options-container {
             display: flex;
             justify-content: center;
             gap: 15px;
-            width: 100%;
-            margin: 0;
+            margin-top: 20px;
         }
 
         .btn-option {
-            background-color: #4ECDC4;
+            background-color: #32CD32;
             color: white;
             border: none;
-            border-radius: 20px;
-            font-size: clamp(24px, 5vh, 35px);
-            font-family: 'Fredoka One', cursive;
-            padding: 1.5vh 10px;
-            min-height: 10vh;
-            height: auto !important; /* Menolak tinggi paksa dari JS */
+            border-radius: 15px;
+            font-size: 32px;
+            font-weight: bold;
+            width: 70px;
+            height: 70px;
             cursor: pointer;
-            box-shadow: 0 6px 0 #38a39b;
-            transition: all 0.1s;
-            display: flex;
-            justify-content: center;
-            align-items: center;
+            box-shadow: 0 6px 0 #228B22;
+            transition: transform 0.1s, box-shadow 0.1s;
         }
 
         .btn-option:active {
             transform: translateY(6px);
-            box-shadow: 0 0 0 #38a39b;
+            box-shadow: 0 0 0 #228B22;
         }
-
-        #math-feedback, #color-feedback, #abc-feedback {
-            font-size: clamp(16px, 3vh, 22px);
-            height: 6vh;
-            margin: 0;
-            border-radius: 15px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            width: 90%;
-            opacity: 0;
-            transition: opacity 0.3s;
-            text-align: center;
-            font-weight: bold;
-        }
-
-        .feedback-win { background-color: #C7F464; color: #333; opacity: 1 !important; }
-        .feedback-lose { background-color: #FF6B6B; color: #fff; opacity: 1 !important; }
-
     </style>
 </head>
 <body>
 
+    <!-- Kontainer Gradien Body Memenuhi Layar -->
     <div id="app-container">
-        
-        <!-- LAYAR MENU UTAMA -->
-        <div id="screen-menu" class="screen active">
-            <div>
-                <span style="font-size: 10vh; animation: bounce 3s infinite; display: block;">🏫</span>
-            </div>
-            <div>
-                <h1>Game TK NAFIL</h1>
-                <div class="subtitle">Belajar, Bermain, Bergembira!</div>
-            </div>
-            
-            <button class="menu-btn btn-math" onclick="openGame('math')">
-                <span>🔢</span> Ayo Berhitung
+        <!-- Logo Sekolah dan Teks Judul -->
+        <div class="school-logo">🏫</div>
+        <h1 class="title-text">Game TK NAFIL</h1>
+        <p class="subtitle-text">Belajar, Bermain, Bergembira!</p>
+
+        <!-- Menu Utama -->
+        <div id="main-menu" class="menu-container">
+            <button class="btn-menu btn-math" onclick="openGame('math')">
+                <span class="btn-icon">🔢</span> Ayo Berhitung
             </button>
-            <button class="menu-btn btn-color" onclick="openGame('color')">
-                <span>🎨</span> Tebak Warna
+            <button class="btn-menu btn-color" onclick="openGame('color')">
+                <span class="btn-icon">🎨</span> Tebak Warna
             </button>
-            <button class="menu-btn btn-abc" onclick="openGame('abc')">
-                <span>🔤</span> Tebak Huruf
+            <button class="btn-menu btn-letter" onclick="openGame('letter')">
+                <span class="btn-icon">abc</span> Tebak Huruf
             </button>
         </div>
 
-        <!-- LAYAR GAME 1: BERHITUNG -->
-        <div id="screen-game-math" class="screen">
-            <div class="header">
-                <button class="btn-back" onclick="goHome()">⬅️ Kembali</button>
-                <div class="score-badge">⭐ <span id="score-math">0</span></div>
+        <!-- Tombol Back (Selalu ada tapi tersembunyi) -->
+        <button id="btn-back" onclick="backToMenu()" style="display: none;">⬅️ Kembali</button>
+
+        <!-- View Game 🔢 Ayo Berhitung -->
+        <div id="game-math" class="game-view">
+            <h2 class="game-title">Ayo Berhitung!</h2>
+            <div class="game-contents">
+                <p>Ada berapa buah apel di bawah ini?</p>
+                <div id="fruitDisplay" class="fruit-display"></div>
+                <div id="math-options" class="options-container"></div>
+                <div id="feedback-math" class="feedback"></div>
             </div>
-            <div class="question-text">Ada berapa hewan di bawah ini?</div>
-            <div id="math-display" class="game-display"></div>
-            <div id="math-options" class="options-row"></div>
-            <div id="math-feedback"></div>
         </div>
 
-        <!-- LAYAR GAME 2: TEBAK WARNA -->
-        <div id="screen-game-color" class="screen">
-            <div class="header">
-                <button class="btn-back" onclick="goHome()">⬅️ Kembali</button>
-                <div class="score-badge">⭐ <span id="score-color">0</span></div>
+        <!-- View Game 🎨 Tebak Warna -->
+        <div id="game-color" class="game-view">
+            <h2 class="game-title">Tebak Warna!</h2>
+            <div class="game-contents">
+                <p id="question-color"></p>
+                <div id="color-options" class="options-container"></div>
+                <div id="feedback-color" class="feedback"></div>
             </div>
-            <div class="question-text" id="color-question">Mana yang warna Merah?</div>
-            <div class="game-display" style="display: none;"></div>
-            <div id="color-options" class="options-grid"></div>
-            <div id="color-feedback"></div>
         </div>
 
-        <!-- LAYAR GAME 3: TEBAK HURUF -->
-        <div id="screen-game-abc" class="screen">
-            <div class="header">
-                <button class="btn-back" onclick="goHome()">⬅️ Kembali</button>
-                <div class="score-badge">⭐ <span id="score-abc">0</span></div>
+        <!-- View Game 🔤 Tebak Huruf -->
+        <div id="game-letter" class="game-view">
+            <h2 class="game-title">Tebak Huruf!</h2>
+            <div class="game-contents">
+                <p id="question-letter"></p>
+                <div id="letter-options" class="options-container"></div>
+                <div id="feedback-letter" class="feedback"></div>
             </div>
-            <div class="question-text" id="abc-question">Huruf 'A' untuk...</div>
-            <div id="abc-options" class="options-grid"></div>
-            <div id="abc-feedback"></div>
         </div>
 
     </div>
 
     <script>
-        // State Management
-        let scores = { math: 0, color: 0, abc: 0 };
-        let currentGameTimeout = null;
+        /* --- Inisialisasi Text-to-Speech (Suara) --- */
+        let tts = null;
 
-        // Audio System (Offline Web Audio API)
-        const AudioContext = window.AudioContext || window.webkitAudioContext;
-        let audioCtx;
-
-        function initAudio() {
-            if (!audioCtx) audioCtx = new AudioContext();
-            if (audioCtx.state === 'suspended') audioCtx.resume();
+        function initTTS() {
+            return new Promise((resolve) => {
+                if ('speechSynthesis' in window) {
+                    tts = window.speechSynthesis;
+                    // Pastikan suara dimuat (Android butuh ini)
+                    window.speechSynthesis.onvoiceschanged = function() {
+                        resolve();
+                    };
+                    // Jika tidak ada suara yang berubah (misal sudah dimuat), resolve setelah delay
+                    setTimeout(resolve, 500);
+                } else {
+                    console.error("Web Speech API tidak didukung!");
+                    resolve();
+                }
+            });
         }
 
-        function playSound(type) {
-            if (!audioCtx) return;
-            const oscillator = audioCtx.createOscillator();
-            const gainNode = audioCtx.createGain();
-            oscillator.connect(gainNode);
-            gainNode.connect(audioCtx.destination);
-            
-            if (type === 'win') {
-                oscillator.type = 'sine';
-                oscillator.frequency.setValueAtTime(523.25, audioCtx.currentTime); // C5
-                oscillator.frequency.setValueAtTime(659.25, audioCtx.currentTime + 0.1); // E5
-                oscillator.frequency.setValueAtTime(783.99, audioCtx.currentTime + 0.2); // G5
-                gainNode.gain.setValueAtTime(0.1, audioCtx.currentTime);
-                gainNode.gain.exponentialRampToValueAtTime(0.00001, audioCtx.currentTime + 0.5);
-                oscillator.start();
-                oscillator.stop(audioCtx.currentTime + 0.5);
-            } else if (type === 'lose') {
-                oscillator.type = 'sawtooth';
-                oscillator.frequency.setValueAtTime(200, audioCtx.currentTime);
-                oscillator.frequency.setValueAtTime(150, audioCtx.currentTime + 0.2);
-                gainNode.gain.setValueAtTime(0.1, audioCtx.currentTime);
-                gainNode.gain.exponentialRampToValueAtTime(0.00001, audioCtx.currentTime + 0.4);
-                oscillator.start();
-                oscillator.stop(audioCtx.currentTime + 0.4);
-            } else if (type === 'click') {
-                oscillator.type = 'sine';
-                oscillator.frequency.setValueAtTime(600, audioCtx.currentTime);
-                gainNode.gain.setValueAtTime(0.05, audioCtx.currentTime);
-                gainNode.gain.exponentialRampToValueAtTime(0.00001, audioCtx.currentTime + 0.1);
-                oscillator.start();
-                oscillator.stop(audioCtx.currentTime + 0.1);
-            }
-        }
-
-        // Text-to-Speech (TTS) System untuk membaca otomatis secara offline
+        /* --- Fungsi Suara Universal --- */
         function speak(text) {
-            if ('speechSynthesis' in window) {
-                window.speechSynthesis.cancel(); // Hentikan suara sebelumnya jika masih bicara
-                const utterance = new SpeechSynthesisUtterance(text);
-                utterance.lang = 'id-ID'; // Gunakan Bahasa Indonesia
-                utterance.pitch = 1.2; // Nada sedikit lebih tinggi (lebih ramah anak)
-                utterance.rate = 0.9;  // Tempo sedikit lebih lambat agar jelas
-                window.speechSynthesis.speak(utterance);
-            }
-        }
-
-        // Navigation Functions
-        function hideAllScreens() {
-            document.querySelectorAll('.screen').forEach(el => el.classList.remove('active'));
-            if(currentGameTimeout) clearTimeout(currentGameTimeout);
-        }
-
-        function goHome() {
-            initAudio();
-            playSound('click');
-            if ('speechSynthesis' in window) window.speechSynthesis.cancel(); // Matikan suara saat kembali ke menu
-            hideAllScreens();
-            document.getElementById('screen-menu').classList.add('active');
-        }
-
-        function openGame(gameType) {
-            initAudio();
-            playSound('click');
-            hideAllScreens();
-            document.getElementById('screen-game-' + gameType).classList.add('active');
+            if (!tts) return;
+            // Hentikan suara yang sedang berjalan agar tidak tumpang tindih
+            tts.cancel();
             
-            // Reset feedback
-            const fb = document.getElementById(gameType + '-feedback');
-            if(fb) { fb.className = ''; fb.innerText = ''; fb.id = gameType + '-feedback'; } // reset id just in case
-
-            if (gameType === 'math') startMathGame();
-            if (gameType === 'color') startColorGame();
-            if (gameType === 'abc') startAbcGame();
+            const utterance = new SpeechSynthesisUtterance(text);
+            utterance.lang = 'id-ID'; // Wajib Bahasa Indonesia
+            utterance.pitch = 1.2; // Sedikit lebih tinggi agar ramah anak
+            utterance.rate = 0.9; // Sedikit lambat agar mudah dimengerti
+            tts.speak(utterance);
         }
 
-        function showFeedback(gameId, isWin, customWinText = "Pintar Sekali!") {
-            const feedback = document.getElementById(gameId + '-feedback');
-            feedback.id = gameId + '-feedback'; // ensure id
-            if (isWin) {
-                playSound('win');
-                scores[gameId] += 10;
-                document.getElementById('score-' + gameId).innerText = scores[gameId];
-                feedback.className = 'feedback-win';
-                feedback.innerText = customWinText + " 🎉";
-                speak(customWinText); // HP Membacakan saat jawaban Benar
-            } else {
-                playSound('lose');
-                feedback.className = 'feedback-lose';
-                feedback.innerText = "Coba Lagi Ya! 🤔";
-                speak("Coba lagi ya!"); // HP Membacakan saat jawaban Salah
+        /* --- Logika Navigasi Menu & Game --- */
+        async function openGame(gameType) {
+            // Inisialisasi suara jika belum (wajib berbunyi)
+            if (!tts) await initTTS();
+
+            // Sembunyikan menu utama
+            document.getElementById('main-menu').style.display = 'none';
+            document.getElementById('btn-back').style.display = 'block';
+
+            // Sembunyikan semua game view terlebih dahulu
+            const views = document.querySelectorAll('.game-view');
+            views.forEach(v => v.style.display = 'none');
+
+            // Tampilkan game view yang dipilih
+            const selectedGame = document.getElementById(`game-${gameType}`);
+            if (selectedGame) {
+                selectedGame.style.display = 'flex'; // Paksa Flexbox agar fit
+                
+                // --- Mulai Suara Pertanyaan Sesuai Game ---
+                if (gameType === 'math') {
+                    startGameMath();
+                    speak("Ayo berhitung! Ada berapa buah apel di bawah ini?");
+                } else if (gameType === 'color') {
+                    startGameColor();
+                    // Suara pertanyaan spesifik akan diatur di showQuestionColor()
+                } else if (gameType === 'letter') {
+                    startGameLetter();
+                    // Suara pertanyaan spesifik akan diatur di showQuestionLetter()
+                }
             }
         }
 
-        let currentMathAnswer = 0;
-        const mathItems = ['🐶', '🐱', '🐰', '🐼', '🚗', '🎈', '🍎', '🍓'];
+        function backToMenu() {
+            // Batalkan suara yang sedang berjalan
+            if (tts) tts.cancel();
 
-        function startMathGame() {
-            const display = document.getElementById('math-display');
-            const options = document.getElementById('math-options');
+            // Sembunyikan tombol back dan semua game view
+            document.getElementById('btn-back').style.display = 'none';
+            const views = document.querySelectorAll('.game-view');
+            views.forEach(v => v.style.display = 'none');
+
+            // Tampilkan kembali menu utama
+            document.getElementById('main-menu').style.display = 'flex'; // Paksa flex
+        }
+
+        /* ========================================================== */
+        /* === Logika Game: Ayo Berhitung (Sederhana dari kode awal) === */
+        /* ========================================================== */
+        let currentAnswerMath = 0;
+        const feedbackMath = document.getElementById('feedback-math');
+
+        function startGameMath() {
+            feedbackMath.innerText = "";
+            const fruitDisplay = document.getElementById('fruitDisplay');
+            const optionsContainer = document.getElementById('math-options');
             
-            currentMathAnswer = Math.floor(Math.random() * 5) + 1;
-            const item = mathItems[Math.floor(Math.random() * mathItems.length)];
+            // Generate angka acak 1 sampai 5
+            currentAnswerMath = Math.floor(Math.random() * 5) + 1;
             
-            let html = '';
-            for(let i=0; i<currentMathAnswer; i++) {
-                html += `<span class="item-icon" style="animation-delay: ${i*0.1}s">${item}</span>`;
+            // Tampilkan buah (Apel)
+            let fruitsHTML = '';
+            for(let i = 0; i < currentAnswerMath; i++) {
+                fruitsHTML += '🍎';
             }
-            display.innerHTML = html;
+            fruitDisplay.innerHTML = fruitsHTML;
 
-            let answers = [currentMathAnswer];
-            while(answers.length < 3) {
-                let wrong = Math.floor(Math.random() * 5) + 1;
-                if(!answers.includes(wrong)) answers.push(wrong);
+            // Buat pilihan jawaban (satu benar, dua salah)
+            let options = [currentAnswerMath];
+            while(options.length < 3) {
+                let wrongAnswer = Math.floor(Math.random() * 5) + 1;
+                if(!options.includes(wrongAnswer)) {
+                    options.push(wrongAnswer);
+                }
             }
-            answers.sort(() => Math.random() - 0.5);
+            
+            // Acak posisi pilihan jawaban
+            options.sort(() => Math.random() - 0.5);
 
-            options.innerHTML = '';
-            answers.forEach(num => {
+            // Tampilkan tombol pilihan
+            optionsContainer.innerHTML = '';
+            options.forEach(num => {
                 let btn = document.createElement('button');
                 btn.className = 'btn-option';
-                btn.style.width = '80px';
-                btn.style.height = '80px';
                 btn.innerText = num;
-                btn.onclick = function() { checkMath(num, this); };
-                options.appendChild(btn);
+                btn.onclick = () => checkAnswerMath(num);
+                optionsContainer.appendChild(btn);
             });
-            
-            const fb = document.getElementById('math-feedback');
-            fb.className = ''; fb.innerText = '';
-            
-            // Bacakan pertanyaan Berhitung
-            speak("Ada berapa hewan di bawah ini?");
         }
 
-        function checkMath(num, btn) {
-            if (btn.disabled) return;
-            const buttons = document.querySelectorAll('#math-options .btn-option');
-            buttons.forEach(b => b.disabled = true);
-
-            if (num === currentMathAnswer) {
-                showFeedback('math', true);
-                currentGameTimeout = setTimeout(startMathGame, 1500);
+        function checkAnswerMath(selectedNumber) {
+            if(selectedNumber === currentAnswerMath) {
+                feedbackMath.style.color = "#32CD32";
+                feedbackMath.innerText = "Hore! Benar Sekali! 🎉";
+                speak(`Benar! Ada ${selectedNumber} apel!`); // Suara respon cerdas
+                setTimeout(startGameMath, 3000); // Lanjut ke soal berikutnya setelah 3 detik
             } else {
-                showFeedback('math', false);
-                currentGameTimeout = setTimeout(() => {
-                    document.getElementById('math-feedback').className = '';
-                    buttons.forEach(b => b.disabled = false);
-                }, 1000);
+                feedbackMath.style.color = "#FF0000";
+                feedbackMath.innerText = "Yah, coba lagi ya! 🤔";
+                speak("Yah, coba lagi!");
             }
         }
 
-        const colors = [
-            { name: 'Merah', code: '#FF4757', shadow: '#ff1e32' },
-            { name: 'Biru', code: '#1E90FF', shadow: '#006add' },
-            { name: 'Hijau', code: '#2ED573', shadow: '#23a859' },
-            { name: 'Kuning', code: '#FFA502', shadow: '#cc8400' }
+        /* ========================================================== */
+        /* === Logika Game: Tebak Warna (Responsif Mobile) === */
+        /* ========================================================== */
+        const colorsData = [
+            { name: "Merah", code: "#FF0000", emoji: "❤️" },
+            { name: "Biru", code: "#0000FF", emoji: "💙" },
+            { name: "Hijau", code: "#008000", emoji: "💚" },
+            { name: "Kuning", code: "#FFFF00", emoji: "💛" },
+            { name: "Ungu", code: "#800080", emoji: "💜" }
         ];
-        let currentColor = null;
 
-        function startColorGame() {
-            const question = document.getElementById('color-question');
-            const options = document.getElementById('color-options');
-            
-            // Pilih 4 warna secara acak (karena data kita ada 4, kita ambil semua dan acak)
-            let shuffledColors = [...colors].sort(() => Math.random() - 0.5);
-            currentColor = shuffledColors[Math.floor(Math.random() * shuffledColors.length)];
-            
-            question.innerHTML = `Mana yang warna <strong style="color:${currentColor.code}">${currentColor.name}</strong>?`;
+        let currentColorData = null;
+        const feedbackColor = document.getElementById('feedback-color');
+        const questionColorT = document.getElementById('question-color');
 
-            options.innerHTML = '';
-            shuffledColors.forEach(c => {
+        function startGameColor() {
+            feedbackColor.innerText = "";
+            const optionsContainer = document.getElementById('color-options');
+            
+            // Pilih warna acak sebagai jawaban benar
+            currentColorData = colorsData[Math.floor(Math.random() * colorsData.length)];
+            
+            // Tampilkan pertanyaan
+            questionColorT.innerHTML = `Mana yang warna <span style="font-weight:bold; color:${currentColorData.code}">${currentColorData.name}</span>? ${currentColorData.emoji}`;
+            
+            // Suara pertanyaan wajib berbunyi (dilambatkan sedikit agar jelas)
+            setTimeout(() => {
+                speak(`Mana yang warna ${currentColorData.name}?`);
+            }, 300); // Sedikit delay agar initTTS() benar-benar siap
+
+            // Buat pilihan (satu benar, dua salah acak)
+            let wrongColors = colorsData.filter(c => c.name !== currentColorData.name);
+            wrongColors.sort(() => Math.random() - 0.5);
+            let options = [currentColorData, wrongColors[0], wrongColors[1]];
+            
+            // Acak posisi pilihan
+            options.sort(() => Math.random() - 0.5);
+
+            // Tampilkan tombol pilihan (kotak warna besar)
+            optionsContainer.innerHTML = '';
+            optionsContainer.style.gap = "clamp(10px, 3vh, 30px)"; // Jarak dinamis
+            
+            options.forEach(colorItem => {
+                let btn = document.createElement('div'); // Gunakan div agar kotak besar
+                btn.style.width = "clamp(50px, 15vh, 120px)"; // Lebar kotak besar
+                btn.style.height = "clamp(50px, 15vh, 120px)"; // Tinggi kotak besar
+                btn.style.backgroundColor = colorItem.code;
+                btn.style.borderRadius = "clamp(10px, 2vh, 20px)";
+                btn.style.cursor = "pointer";
+                btn.style.boxShadow = "0 4px 6px rgba(0,0,0,0.2)";
+                btn.onclick = () => checkAnswerColor(colorItem);
+                optionsContainer.appendChild(btn);
+            });
+        }
+
+        function checkAnswerColor(selectedColor) {
+            if(selectedColor.name === currentColorData.name) {
+                feedbackColor.style.color = "#32CD32";
+                feedbackColor.innerText = `Benar! Ini ${currentColorData.name}! 🎉`;
+                speak(`Ya! Ini ${currentColorData.name}!`); // Suara respon cerdas
+                setTimeout(startGameColor, 2500); 
+            } else {
+                feedbackColor.style.color = "#FF0000";
+                feedbackColor.innerText = `Bukan! Coba lagi! 🤔`;
+                speak("Bukan! Coba lagi!");
+            }
+        }
+
+        /* ========================================================== */
+        /* === Logika Game: Tebak Huruf (Responsif Mobile) === */
+        /* ========================================================== */
+        const lettersData = [
+            { letter: "A", word: "Apel", emoji: "🍎" },
+            { letter: "B", word: "Bola", emoji: "⚽" },
+            { letter: "C", word: "Cicak", emoji: "🦎" },
+            { letter: "D", word: "Domba", emoji: "🐑" },
+            { letter: "E", word: "Es Krim", emoji: "🍦" }
+        ];
+
+        let currentLetterData = null;
+        const feedbackLetter = document.getElementById('feedback-letter');
+        const questionLetterT = document.getElementById('question-letter');
+
+        function startGameLetter() {
+            feedbackLetter.innerText = "";
+            const optionsContainer = document.getElementById('letter-options');
+            
+            // Pilih huruf acak sebagai jawaban benar
+            currentLetterData = lettersData[Math.floor(Math.random() * lettersData.length)];
+            
+            // Tampilkan pertanyaan
+            questionLetterT.innerHTML = `Huruf <span style="font-weight:bold; font-size:36px; color:#FF4500">${currentLetterData.letter}</span> untuk apa?`;
+            
+            // Suara pertanyaan wajib berbunyi (dilambatkan sedikit agar jelas)
+            setTimeout(() => {
+                speak(`Huruf ${currentLetterData.letter} untuk apa?`);
+            }, 300); // Sedikit delay agar initTTS() benar-benar siap
+
+            // Buat pilihan (satu emoji benar, dua emoji salah acak)
+            let wrongLetters = lettersData.filter(l => l.letter !== currentLetterData.letter);
+            wrongLetters.sort(() => Math.random() - 0.5);
+            let options = [currentLetterData, wrongLetters[0], wrongLetters[1]];
+            
+            // Acak posisi pilihan
+            options.sort(() => Math.random() - 0.5);
+
+            // Tampilkan tombol pilihan (emoji besar)
+            optionsContainer.innerHTML = '';
+            options.forEach(letterItem => {
                 let btn = document.createElement('button');
                 btn.className = 'btn-option';
-                btn.style.backgroundColor = c.code;
-                btn.style.boxShadow = `0 8px 0 ${c.shadow}`;
-                btn.style.height = '100px';
-                btn.onclick = function() { checkColor(c.name, this); };
-                options.appendChild(btn);
+                btn.style.fontSize = "clamp(30px, 8vh, 60px)"; // Ukuran emoji dinamis
+                btn.style.width = "clamp(60px, 15vh, 120px)"; // Tinggi tombol besar
+                btn.style.height = "clamp(60px, 15vh, 120px)"; // Tinggi tombol besar
+                btn.innerHTML = letterItem.emoji;
+                btn.onclick = () => checkAnswerLetter(letterItem);
+                optionsContainer.appendChild(btn);
             });
-
-            const fb = document.getElementById('color-feedback');
-            fb.className = ''; fb.innerText = '';
-            
-            // Bacakan pertanyaan Warna
-            speak("Mana yang warna " + currentColor.name + "?");
         }
 
-        function checkColor(colorName, btn) {
-            if (btn.disabled) return;
-            const buttons = document.querySelectorAll('#color-options .btn-option');
-            buttons.forEach(b => b.disabled = true);
-
-            if (colorName === currentColor.name) {
-                showFeedback('color', true);
-                currentGameTimeout = setTimeout(startColorGame, 1500);
+        function checkAnswerLetter(selectedLetterItem) {
+            if(selectedLetterItem.letter === currentLetterData.letter) {
+                feedbackLetter.style.color = "#32CD32";
+                feedbackLetter.innerText = `Benar! ${currentLetterData.letter} untuk ${currentLetterData.word}! 🎉`;
+                speak(`Ya! ${currentLetterData.letter} untuk ${currentLetterData.word}!`); // Suara respon cerdas
+                setTimeout(startGameLetter, 3000);
             } else {
-                showFeedback('color', false);
-                currentGameTimeout = setTimeout(() => {
-                    document.getElementById('color-feedback').className = '';
-                    buttons.forEach(b => b.disabled = false);
-                }, 1000);
+                feedbackLetter.style.color = "#FF0000";
+                feedbackLetter.innerText = "Yah, salah! Coba lagi! 🤔";
+                speak("Yah, salah! Coba lagi!");
             }
         }
 
-        const abcData = [
-            { letter: 'A', answer: '🍎', wrong: ['🐶','🚗','🎈'], name: 'Apel' },
-            { letter: 'B', answer: '🎈', wrong: ['🍎','🐱','🍓'], name: 'Balon' },
-            { letter: 'M', answer: '🚗', wrong: ['🐶','🍎','🐰'], name: 'Mobil' },
-            { letter: 'K', answer: '🐱', wrong: ['🍓','🐼','🚗'], name: 'Kucing' }
-        ];
-        let currentAbc = null;
+        // Coba inisialisasi suara saat halaman dimuat (opsional, sebagai cadangan)
+        window.addEventListener('load', initTTS);
 
-        function startAbcGame() {
-            const question = document.getElementById('abc-question');
-            const options = document.getElementById('abc-options');
-            
-            currentAbc = abcData[Math.floor(Math.random() * abcData.length)];
-            question.innerHTML = `Huruf <strong style="font-size:35px; color:#FF6B6B">${currentAbc.letter}</strong> untuk...`;
-
-            // Buat pilihan: 1 benar, 3 salah (diambil 3 dari array wrong)
-            let choices = [currentAbc.answer, ...currentAbc.wrong].slice(0, 4);
-            choices.sort(() => Math.random() - 0.5);
-
-            options.innerHTML = '';
-            choices.forEach(emoji => {
-                let btn = document.createElement('button');
-                btn.className = 'btn-option';
-                btn.style.backgroundColor = '#f1f2f6';
-                btn.style.color = '#333';
-                btn.style.boxShadow = '0 8px 0 #dfe4ea';
-                btn.style.height = '100px';
-                btn.innerText = emoji;
-                btn.onclick = function() { checkAbc(emoji, this); };
-                options.appendChild(btn);
-            });
-
-            const fb = document.getElementById('abc-feedback');
-            fb.className = ''; fb.innerText = '';
-            
-            // Bacakan pertanyaan Huruf
-            speak("Huruf " + currentAbc.letter + " untuk apa?");
-        }
-
-        function checkAbc(selectedEmoji, btn) {
-            if (btn.disabled) return;
-            const buttons = document.querySelectorAll('#abc-options .btn-option');
-            buttons.forEach(b => b.disabled = true);
-
-            if (selectedEmoji === currentAbc.answer) {
-                // Tampilkan dan Bacakan nama objek saat benar (Contoh: "Ya! Apel")
-                document.getElementById('abc-question').innerHTML = `Ya! <strong>${currentAbc.name}</strong>`;
-                showFeedback('abc', true, `Ya! ${currentAbc.name}`);
-                currentGameTimeout = setTimeout(startAbcGame, 2000);
-            } else {
-                showFeedback('abc', false);
-                currentGameTimeout = setTimeout(() => {
-                    document.getElementById('abc-feedback').className = '';
-                    buttons.forEach(b => b.disabled = false);
-                }, 1000);
-            }
-        }
     </script>
 </body>
 </html>
