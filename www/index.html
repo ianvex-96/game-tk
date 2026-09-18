@@ -41,6 +41,7 @@
             align-items: center;
         }
 
+        /* --- Teks dan Menu --- */
         .school-logo {
             font-size: clamp(60px, 15vh, 120px);
             margin-top: 5vh;
@@ -67,6 +68,8 @@
             gap: 2.5vh;
             align-items: center;
             padding-bottom: 5vh;
+            position: relative;
+            flex-grow: 1;
         }
 
         .btn-menu {
@@ -95,6 +98,33 @@
             margin-right: clamp(10px, 2.5vh, 20px);
         }
 
+        /* --- Tambahan: Tombol Suara Ulang & Versi --- */
+        .btn-speak {
+            background-color: #FFA500;
+            color: white;
+            border: none;
+            border-radius: 20px;
+            padding: 8px 15px;
+            font-size: 16px;
+            font-weight: bold;
+            margin-bottom: 15px;
+            cursor: pointer;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.2);
+            transition: transform 0.1s;
+        }
+        .btn-speak:active {
+            transform: scale(0.95);
+        }
+        
+        .version-info {
+            position: absolute;
+            bottom: 2vh;
+            font-size: 14px;
+            color: #666;
+            font-weight: bold;
+        }
+
+        /* --- Kontainer Game --- */
         .game-view {
             display: none;
             width: 100%;
@@ -135,6 +165,7 @@
         .game-contents > p {
             font-size: clamp(16px, 2.5vh, 24px);
             text-align: center;
+            margin-bottom: 10px;
         }
 
         .game-contents {
@@ -148,7 +179,7 @@
 
         .fruit-display {
             font-size: clamp(40px, 8vh, 80px);
-            margin: 3vh 0;
+            margin: 2vh 0;
             min-height: 10vh;
             display: flex;
             justify-content: center;
@@ -176,19 +207,22 @@
             box-shadow: 0 6px 0 #228B22;
         }
         
-        /* --- PERBAIKAN: Spasi Teks Benar/Salah --- */
+        .btn-option:active {
+            transform: translateY(6px);
+            box-shadow: 0 0 0 #228B22;
+        }
+
         .feedback {
             font-size: clamp(18px, 3vh, 28px);
             font-weight: bold;
             min-height: 4vh;
-            margin-top: 5vh; /* Memberikan spasi yang lega dari tombol */
+            margin-top: 5vh; /* Ruang lega untuk teks benar/salah */
             text-align: center;
             width: 100%;
         }
     </style>
 </head>
 <body>
-
     <div id="app-container">
         <div class="school-logo">🏫</div>
         <h1 class="title-text">Game TK NAFIL</h1>
@@ -204,6 +238,8 @@
             <button class="btn-menu btn-letter" onclick="openGame('letter')">
                 <span class="btn-icon">abc</span> Tebak Huruf
             </button>
+            <!-- Auto Versioning dari GitHub Actions -->
+            <div class="version-info">Versi 1.0.0</div> 
         </div>
 
         <button id="btn-back" onclick="backToMenu()" style="display: none;">⬅️ Kembali</button>
@@ -212,9 +248,9 @@
             <h2 class="game-title">Ayo Berhitung!</h2>
             <div class="game-contents">
                 <p>Ada berapa buah apel di bawah ini?</p>
+                <button class="btn-speak" onclick="speak('Ayo berhitung! Ada berapa buah apel di bawah ini?')">🔊 Ulangi Suara</button>
                 <div id="fruitDisplay" class="fruit-display"></div>
                 <div id="math-options" class="options-container"></div>
-                <!-- PERBAIKAN: Menggunakan class="feedback" sesuai CSS -->
                 <div id="feedback-math" class="feedback"></div>
             </div>
         </div>
@@ -223,6 +259,7 @@
             <h2 class="game-title">Tebak Warna!</h2>
             <div class="game-contents">
                 <p id="question-color"></p>
+                <button class="btn-speak" onclick="replayColorAudio()">🔊 Ulangi Suara</button>
                 <div id="color-options" class="options-container"></div>
                 <div id="feedback-color" class="feedback"></div>
             </div>
@@ -232,20 +269,17 @@
             <h2 class="game-title">Tebak Huruf!</h2>
             <div class="game-contents">
                 <p id="question-letter"></p>
+                <button class="btn-speak" onclick="replayLetterAudio()">🔊 Ulangi Suara</button>
                 <div id="letter-options" class="options-container"></div>
                 <div id="feedback-letter" class="feedback"></div>
             </div>
         </div>
-
     </div>
 
     <script>
-        /* ========================================================== */
-        /* --- PERBAIKAN: Sistem Suara Anti-Blokir Android --- */
-        /* ========================================================== */
+        /* --- Sistem Suara Anti-Blokir Android --- */
         let ttsUnlocked = false;
 
-        // Trik Android: Aktifkan mesin suara secara diam-diam saat layar disentuh pertama kali
         function unlockAudio() {
             if (!ttsUnlocked && 'speechSynthesis' in window) {
                 let silentUtterance = new SpeechSynthesisUtterance('');
@@ -256,10 +290,10 @@
         document.addEventListener('touchstart', unlockAudio, { once: true });
         document.addEventListener('click', unlockAudio, { once: true });
 
-        // Fungsi Suara Utama
+        /* --- Fungsi Suara Utama --- */
         function speak(text) {
             if ('speechSynthesis' in window) {
-                window.speechSynthesis.cancel(); // Matikan suara sebelumnya
+                window.speechSynthesis.cancel(); 
                 const utterance = new SpeechSynthesisUtterance(text);
                 utterance.lang = 'id-ID';
                 utterance.pitch = 1.2;
@@ -268,22 +302,26 @@
             }
         }
 
+        function replayColorAudio() {
+            if (currentColorData) speak(`Mana yang warna ${currentColorData.name}?`);
+        }
+
+        function replayLetterAudio() {
+            if (currentLetterData) speak(`Huruf ${currentLetterData.letter} untuk apa?`);
+        }
+
         /* --- Logika Navigasi --- */
         function openGame(gameType) {
-            // Sembunyikan menu utama
             document.getElementById('main-menu').style.display = 'none';
             document.getElementById('btn-back').style.display = 'block';
 
-            // Sembunyikan semua game view
             const views = document.querySelectorAll('.game-view');
             views.forEach(v => v.style.display = 'none');
 
-            // Tampilkan game yang dipilih
             const selectedGame = document.getElementById(`game-${gameType}`);
             if (selectedGame) {
                 selectedGame.style.display = 'flex';
                 
-                // Mulai permainan dan bersuara seketika (tanpa delay agar tidak diblokir)
                 if (gameType === 'math') {
                     startGameMath();
                     speak("Ayo berhitung! Ada berapa buah apel di bawah ini?");
@@ -298,14 +336,14 @@
         function backToMenu() {
             if ('speechSynthesis' in window) window.speechSynthesis.cancel();
             document.getElementById('btn-back').style.display = 'none';
+            
             const views = document.querySelectorAll('.game-view');
             views.forEach(v => v.style.display = 'none');
+            
             document.getElementById('main-menu').style.display = 'flex';
         }
 
-        /* ========================================================== */
         /* === Game 1: Ayo Berhitung === */
-        /* ========================================================== */
         let currentAnswerMath = 0;
         const feedbackMath = document.getElementById('feedback-math');
 
@@ -350,9 +388,7 @@
             }
         }
 
-        /* ========================================================== */
         /* === Game 2: Tebak Warna === */
-        /* ========================================================== */
         const colorsData = [
             { name: "Merah", code: "#FF0000", emoji: "❤️" },
             { name: "Biru", code: "#0000FF", emoji: "💙" },
@@ -371,7 +407,6 @@
             
             questionColorT.innerHTML = `Mana yang warna <span style="font-weight:bold; color:${currentColorData.code}">${currentColorData.name}</span>? ${currentColorData.emoji}`;
             
-            // Langsung panggil suara tanpa delay
             speak(`Mana yang warna ${currentColorData.name}?`);
 
             let wrongColors = colorsData.filter(c => c.name !== currentColorData.name);
@@ -408,9 +443,7 @@
             }
         }
 
-        /* ========================================================== */
         /* === Game 3: Tebak Huruf === */
-        /* ========================================================== */
         const lettersData = [
             { letter: "A", word: "Apel", emoji: "🍎" },
             { letter: "B", word: "Bola", emoji: "⚽" },
@@ -429,7 +462,6 @@
             
             questionLetterT.innerHTML = `Huruf <span style="font-weight:bold; font-size:36px; color:#FF4500">${currentLetterData.letter}</span> untuk apa?`;
             
-            // Langsung panggil suara
             speak(`Huruf ${currentLetterData.letter} untuk apa?`);
 
             let wrongLetters = lettersData.filter(l => l.letter !== currentLetterData.letter);
