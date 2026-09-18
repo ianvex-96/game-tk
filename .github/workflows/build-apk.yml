@@ -12,39 +12,44 @@ steps:
 - name: Checkout Code
   uses: actions/checkout@v4
 
-- name: Setup Java 17
+# KUNCI PERBAIKAN 1: Wajib gunakan Java 11 (Paling stabil untuk Cordova)
+- name: Setup Java 11
   uses: actions/setup-java@v4
   with:
     distribution: 'temurin'
-    java-version: '17'
+    java-version: '11'
 
+# KUNCI PERBAIKAN 2: Gunakan Node 18 LTS
 - name: Setup Node.js
   uses: actions/setup-node@v4
   with:
-    node-version: '20'
+    node-version: '18'
 
 - name: Install Apache Cordova
   run: npm install -g cordova
 
 - name: Build APK Offline & Auto Version
   run: |
-    cordova create android_app com.ianvex.gametk "Game TK NAFIL"
+    # Buat project
+    cordova create app com.ianvex.gametk "Game TK NAFIL"
     
-    # Mengubah versi di mesin Android secara otomatis berdasarkan jumlah update di GitHub
-    sed -i "s/version=\"1.0.0\"/version=\"1.0.${{ github.run_number }}\" android-versionCode=\"${{ github.run_number }}\"/g" android_app/config.xml
+    # Ganti file web bawaan dengan file game kita
+    rm -rf app/www
+    cp -r www app/
     
-    rm -rf android_app/www/*
-    cp -r www/* android_app/www/
+    # Masuk ke folder project
+    cd app
     
-    # Mengubah teks Versi di layar Menu secara otomatis
-    sed -i "s/Versi 1.0.0/Versi 1.0.${{ github.run_number }}/g" android_app/www/index.html
+    # Update versi otomatis
+    sed -i "s/version=\"1.0.0\"/version=\"1.0.${{ github.run_number }}\" android-versionCode=\"${{ github.run_number }}\"/g" config.xml
+    sed -i "s/Versi 1.0.0/Versi 1.0.${{ github.run_number }}/g" www/index.html
     
-    cd android_app
-    cordova platform add android
+    # KUNCI PERBAIKAN 3: Kunci di Cordova Android versi 12.0.0 agar tidak crash
+    cordova platform add android@12.0.0
     cordova build android
 
 - name: Upload Hasil APK
   uses: actions/upload-artifact@v4
   with:
     name: Game-TK-NAFIL-Update-${{ github.run_number }}
-    path: android_app/platforms/android/app/build/outputs/apk/debug/app-debug.apk
+    path: app/platforms/android/app/build/outputs/apk/debug/app-debug.apk
