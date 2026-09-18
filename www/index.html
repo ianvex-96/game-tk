@@ -1,1 +1,579 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Game TK NAFIL</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@700&display=swap');
 
+        * {
+            box-sizing: border-box;
+            user-select: none;
+            -webkit-touch-callout: none;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            /* Fallback offline font jika internet tidak ada */
+            font-family: 'Fredoka One', 'Comic Sans MS', cursive, sans-serif;
+            background-color: #222; /* Warna latar gelap (letterbox) jika rasio layar melebihi 9:16 */
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            width: 100vw;
+            color: #333;
+            overflow: hidden;
+            touch-action: manipulation; /* Optimasi sentuhan di HP */
+        }
+
+        #app-container {
+            width: 100vw;
+            height: 100vh;
+            /* Rumus sakti untuk mengunci rasio tepat di 9:16 */
+            max-width: calc(100vh * (9 / 16));
+            max-height: calc(100vw * (16 / 9));
+            background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 0 30px rgba(0,0,0,0.5);
+            overflow: hidden; /* Mencegah tumpah keluar wadah */
+        }
+
+        .screen {
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: space-evenly; /* Distribusi ruang merata otomatis, anti-scroll */
+            width: 100%;
+            height: 100%;
+            padding: 2vh 15px; /* Menggunakan persentase tinggi layar */
+            overflow: hidden; /* Menghilangkan scrollbar selamanya */
+        }
+
+        .screen.active {
+            display: flex;
+            animation: fadeIn 0.3s ease-in-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: scale(0.95); }
+            to { opacity: 1; transform: scale(1); }
+        }
+
+        h1 {
+            font-size: clamp(24px, 4vh, 32px); /* Teks membesar/mengecil mengikuti layar */
+            color: #FF6B6B;
+            margin: 0;
+            text-shadow: 2px 2px 0px #FFE66D;
+            letter-spacing: 2px;
+            text-align: center;
+        }
+
+        .subtitle {
+            font-size: clamp(14px, 2.5vh, 18px);
+            color: #4ECDC4;
+            margin: 0;
+            font-family: 'Nunito', 'Comic Sans MS', sans-serif;
+            text-align: center;
+        }
+
+        .question-text {
+            font-size: clamp(18px, 3vh, 24px);
+            color: #556270;
+            margin: 0;
+            text-align: center;
+            line-height: 1.2;
+            font-weight: bold;
+        }
+
+        .menu-btn {
+            width: 90%;
+            padding: 2.5vh 15px;
+            margin: 0;
+            border-radius: 20px;
+            border: none;
+            font-size: clamp(18px, 3vh, 22px);
+            font-family: 'Fredoka One', cursive;
+            color: white;
+            cursor: pointer;
+            box-shadow: 0 6px 0 rgba(0,0,0,0.15);
+            transition: transform 0.1s, box-shadow 0.1s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
+        }
+
+        .menu-btn:active {
+            transform: translateY(6px);
+            box-shadow: 0 0 0 rgba(0,0,0,0.15);
+        }
+
+        .btn-math { background-color: #FF6B6B; box-shadow: 0 6px 0 #D94848; }
+        .btn-color { background-color: #4ECDC4; box-shadow: 0 6px 0 #2CA8A0; }
+        .btn-abc { background-color: #FFE66D; color: #556270; box-shadow: 0 6px 0 #D9C24D; }
+
+        .header {
+            width: 100%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0;
+        }
+
+        .btn-back {
+            background-color: #f1f2f6;
+            color: #556270;
+            border: none;
+            border-radius: 15px;
+            padding: 1.5vh 15px;
+            font-size: clamp(14px, 2.5vh, 18px);
+            font-family: 'Fredoka One', cursive;
+            cursor: pointer;
+            box-shadow: 0 4px 0 #dfe4ea;
+        }
+        
+        .btn-back:active {
+            transform: translateY(4px);
+            box-shadow: 0 0 0 #dfe4ea;
+        }
+
+        .score-badge {
+            background-color: #FFE66D;
+            color: #FF6B6B;
+            padding: 1vh 15px;
+            border-radius: 15px;
+            font-size: clamp(14px, 2.5vh, 18px);
+            border: 3px solid #fff;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            font-weight: bold;
+        }
+
+        .game-display {
+            font-size: clamp(40px, 8vh, 70px);
+            margin: 0;
+            min-height: 12vh;
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 10px;
+            align-items: center;
+            width: 100%;
+            background: #f8f9fa;
+            border-radius: 20px;
+            padding: 2vh;
+            border: 3px dashed #cbd5e1;
+        }
+
+        .item-icon {
+            animation: bounce 2s infinite ease-in-out;
+        }
+
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+
+        .options-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+            width: 100%;
+            margin: 0;
+        }
+
+        .options-row {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            width: 100%;
+            margin: 0;
+        }
+
+        .btn-option {
+            background-color: #4ECDC4;
+            color: white;
+            border: none;
+            border-radius: 20px;
+            font-size: clamp(24px, 5vh, 35px);
+            font-family: 'Fredoka One', cursive;
+            padding: 1.5vh 10px;
+            min-height: 10vh;
+            height: auto !important; /* Menolak tinggi paksa dari JS */
+            cursor: pointer;
+            box-shadow: 0 6px 0 #38a39b;
+            transition: all 0.1s;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .btn-option:active {
+            transform: translateY(6px);
+            box-shadow: 0 0 0 #38a39b;
+        }
+
+        #math-feedback, #color-feedback, #abc-feedback {
+            font-size: clamp(16px, 3vh, 22px);
+            height: 6vh;
+            margin: 0;
+            border-radius: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 90%;
+            opacity: 0;
+            transition: opacity 0.3s;
+            text-align: center;
+            font-weight: bold;
+        }
+
+        .feedback-win { background-color: #C7F464; color: #333; opacity: 1 !important; }
+        .feedback-lose { background-color: #FF6B6B; color: #fff; opacity: 1 !important; }
+
+    </style>
+</head>
+<body>
+
+    <div id="app-container">
+        
+        <!-- LAYAR MENU UTAMA -->
+        <div id="screen-menu" class="screen active">
+            <div>
+                <span style="font-size: 10vh; animation: bounce 3s infinite; display: block;">🏫</span>
+            </div>
+            <div>
+                <h1>Game TK NAFIL</h1>
+                <div class="subtitle">Belajar, Bermain, Bergembira!</div>
+            </div>
+            
+            <button class="menu-btn btn-math" onclick="openGame('math')">
+                <span>🔢</span> Ayo Berhitung
+            </button>
+            <button class="menu-btn btn-color" onclick="openGame('color')">
+                <span>🎨</span> Tebak Warna
+            </button>
+            <button class="menu-btn btn-abc" onclick="openGame('abc')">
+                <span>🔤</span> Tebak Huruf
+            </button>
+        </div>
+
+        <!-- LAYAR GAME 1: BERHITUNG -->
+        <div id="screen-game-math" class="screen">
+            <div class="header">
+                <button class="btn-back" onclick="goHome()">⬅️ Kembali</button>
+                <div class="score-badge">⭐ <span id="score-math">0</span></div>
+            </div>
+            <div class="question-text">Ada berapa hewan di bawah ini?</div>
+            <div id="math-display" class="game-display"></div>
+            <div id="math-options" class="options-row"></div>
+            <div id="math-feedback"></div>
+        </div>
+
+        <!-- LAYAR GAME 2: TEBAK WARNA -->
+        <div id="screen-game-color" class="screen">
+            <div class="header">
+                <button class="btn-back" onclick="goHome()">⬅️ Kembali</button>
+                <div class="score-badge">⭐ <span id="score-color">0</span></div>
+            </div>
+            <div class="question-text" id="color-question">Mana yang warna Merah?</div>
+            <div class="game-display" style="display: none;"></div>
+            <div id="color-options" class="options-grid"></div>
+            <div id="color-feedback"></div>
+        </div>
+
+        <!-- LAYAR GAME 3: TEBAK HURUF -->
+        <div id="screen-game-abc" class="screen">
+            <div class="header">
+                <button class="btn-back" onclick="goHome()">⬅️ Kembali</button>
+                <div class="score-badge">⭐ <span id="score-abc">0</span></div>
+            </div>
+            <div class="question-text" id="abc-question">Huruf 'A' untuk...</div>
+            <div id="abc-options" class="options-grid"></div>
+            <div id="abc-feedback"></div>
+        </div>
+
+    </div>
+
+    <script>
+        // State Management
+        let scores = { math: 0, color: 0, abc: 0 };
+        let currentGameTimeout = null;
+
+        // Audio System (Offline Web Audio API)
+        const AudioContext = window.AudioContext || window.webkitAudioContext;
+        let audioCtx;
+
+        function initAudio() {
+            if (!audioCtx) audioCtx = new AudioContext();
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+        }
+
+        function playSound(type) {
+            if (!audioCtx) return;
+            const oscillator = audioCtx.createOscillator();
+            const gainNode = audioCtx.createGain();
+            oscillator.connect(gainNode);
+            gainNode.connect(audioCtx.destination);
+            
+            if (type === 'win') {
+                oscillator.type = 'sine';
+                oscillator.frequency.setValueAtTime(523.25, audioCtx.currentTime); // C5
+                oscillator.frequency.setValueAtTime(659.25, audioCtx.currentTime + 0.1); // E5
+                oscillator.frequency.setValueAtTime(783.99, audioCtx.currentTime + 0.2); // G5
+                gainNode.gain.setValueAtTime(0.1, audioCtx.currentTime);
+                gainNode.gain.exponentialRampToValueAtTime(0.00001, audioCtx.currentTime + 0.5);
+                oscillator.start();
+                oscillator.stop(audioCtx.currentTime + 0.5);
+            } else if (type === 'lose') {
+                oscillator.type = 'sawtooth';
+                oscillator.frequency.setValueAtTime(200, audioCtx.currentTime);
+                oscillator.frequency.setValueAtTime(150, audioCtx.currentTime + 0.2);
+                gainNode.gain.setValueAtTime(0.1, audioCtx.currentTime);
+                gainNode.gain.exponentialRampToValueAtTime(0.00001, audioCtx.currentTime + 0.4);
+                oscillator.start();
+                oscillator.stop(audioCtx.currentTime + 0.4);
+            } else if (type === 'click') {
+                oscillator.type = 'sine';
+                oscillator.frequency.setValueAtTime(600, audioCtx.currentTime);
+                gainNode.gain.setValueAtTime(0.05, audioCtx.currentTime);
+                gainNode.gain.exponentialRampToValueAtTime(0.00001, audioCtx.currentTime + 0.1);
+                oscillator.start();
+                oscillator.stop(audioCtx.currentTime + 0.1);
+            }
+        }
+
+        // Text-to-Speech (TTS) System untuk membaca otomatis secara offline
+        function speak(text) {
+            if ('speechSynthesis' in window) {
+                window.speechSynthesis.cancel(); // Hentikan suara sebelumnya jika masih bicara
+                const utterance = new SpeechSynthesisUtterance(text);
+                utterance.lang = 'id-ID'; // Gunakan Bahasa Indonesia
+                utterance.pitch = 1.2; // Nada sedikit lebih tinggi (lebih ramah anak)
+                utterance.rate = 0.9;  // Tempo sedikit lebih lambat agar jelas
+                window.speechSynthesis.speak(utterance);
+            }
+        }
+
+        // Navigation Functions
+        function hideAllScreens() {
+            document.querySelectorAll('.screen').forEach(el => el.classList.remove('active'));
+            if(currentGameTimeout) clearTimeout(currentGameTimeout);
+        }
+
+        function goHome() {
+            initAudio();
+            playSound('click');
+            if ('speechSynthesis' in window) window.speechSynthesis.cancel(); // Matikan suara saat kembali ke menu
+            hideAllScreens();
+            document.getElementById('screen-menu').classList.add('active');
+        }
+
+        function openGame(gameType) {
+            initAudio();
+            playSound('click');
+            hideAllScreens();
+            document.getElementById('screen-game-' + gameType).classList.add('active');
+            
+            // Reset feedback
+            const fb = document.getElementById(gameType + '-feedback');
+            if(fb) { fb.className = ''; fb.innerText = ''; fb.id = gameType + '-feedback'; } // reset id just in case
+
+            if (gameType === 'math') startMathGame();
+            if (gameType === 'color') startColorGame();
+            if (gameType === 'abc') startAbcGame();
+        }
+
+        function showFeedback(gameId, isWin, customWinText = "Pintar Sekali!") {
+            const feedback = document.getElementById(gameId + '-feedback');
+            feedback.id = gameId + '-feedback'; // ensure id
+            if (isWin) {
+                playSound('win');
+                scores[gameId] += 10;
+                document.getElementById('score-' + gameId).innerText = scores[gameId];
+                feedback.className = 'feedback-win';
+                feedback.innerText = customWinText + " 🎉";
+                speak(customWinText); // HP Membacakan saat jawaban Benar
+            } else {
+                playSound('lose');
+                feedback.className = 'feedback-lose';
+                feedback.innerText = "Coba Lagi Ya! 🤔";
+                speak("Coba lagi ya!"); // HP Membacakan saat jawaban Salah
+            }
+        }
+
+        let currentMathAnswer = 0;
+        const mathItems = ['🐶', '🐱', '🐰', '🐼', '🚗', '🎈', '🍎', '🍓'];
+
+        function startMathGame() {
+            const display = document.getElementById('math-display');
+            const options = document.getElementById('math-options');
+            
+            currentMathAnswer = Math.floor(Math.random() * 5) + 1;
+            const item = mathItems[Math.floor(Math.random() * mathItems.length)];
+            
+            let html = '';
+            for(let i=0; i<currentMathAnswer; i++) {
+                html += `<span class="item-icon" style="animation-delay: ${i*0.1}s">${item}</span>`;
+            }
+            display.innerHTML = html;
+
+            let answers = [currentMathAnswer];
+            while(answers.length < 3) {
+                let wrong = Math.floor(Math.random() * 5) + 1;
+                if(!answers.includes(wrong)) answers.push(wrong);
+            }
+            answers.sort(() => Math.random() - 0.5);
+
+            options.innerHTML = '';
+            answers.forEach(num => {
+                let btn = document.createElement('button');
+                btn.className = 'btn-option';
+                btn.style.width = '80px';
+                btn.style.height = '80px';
+                btn.innerText = num;
+                btn.onclick = function() { checkMath(num, this); };
+                options.appendChild(btn);
+            });
+            
+            const fb = document.getElementById('math-feedback');
+            fb.className = ''; fb.innerText = '';
+            
+            // Bacakan pertanyaan Berhitung
+            speak("Ada berapa hewan di bawah ini?");
+        }
+
+        function checkMath(num, btn) {
+            if (btn.disabled) return;
+            const buttons = document.querySelectorAll('#math-options .btn-option');
+            buttons.forEach(b => b.disabled = true);
+
+            if (num === currentMathAnswer) {
+                showFeedback('math', true);
+                currentGameTimeout = setTimeout(startMathGame, 1500);
+            } else {
+                showFeedback('math', false);
+                currentGameTimeout = setTimeout(() => {
+                    document.getElementById('math-feedback').className = '';
+                    buttons.forEach(b => b.disabled = false);
+                }, 1000);
+            }
+        }
+
+        const colors = [
+            { name: 'Merah', code: '#FF4757', shadow: '#ff1e32' },
+            { name: 'Biru', code: '#1E90FF', shadow: '#006add' },
+            { name: 'Hijau', code: '#2ED573', shadow: '#23a859' },
+            { name: 'Kuning', code: '#FFA502', shadow: '#cc8400' }
+        ];
+        let currentColor = null;
+
+        function startColorGame() {
+            const question = document.getElementById('color-question');
+            const options = document.getElementById('color-options');
+            
+            // Pilih 4 warna secara acak (karena data kita ada 4, kita ambil semua dan acak)
+            let shuffledColors = [...colors].sort(() => Math.random() - 0.5);
+            currentColor = shuffledColors[Math.floor(Math.random() * shuffledColors.length)];
+            
+            question.innerHTML = `Mana yang warna <strong style="color:${currentColor.code}">${currentColor.name}</strong>?`;
+
+            options.innerHTML = '';
+            shuffledColors.forEach(c => {
+                let btn = document.createElement('button');
+                btn.className = 'btn-option';
+                btn.style.backgroundColor = c.code;
+                btn.style.boxShadow = `0 8px 0 ${c.shadow}`;
+                btn.style.height = '100px';
+                btn.onclick = function() { checkColor(c.name, this); };
+                options.appendChild(btn);
+            });
+
+            const fb = document.getElementById('color-feedback');
+            fb.className = ''; fb.innerText = '';
+            
+            // Bacakan pertanyaan Warna
+            speak("Mana yang warna " + currentColor.name + "?");
+        }
+
+        function checkColor(colorName, btn) {
+            if (btn.disabled) return;
+            const buttons = document.querySelectorAll('#color-options .btn-option');
+            buttons.forEach(b => b.disabled = true);
+
+            if (colorName === currentColor.name) {
+                showFeedback('color', true);
+                currentGameTimeout = setTimeout(startColorGame, 1500);
+            } else {
+                showFeedback('color', false);
+                currentGameTimeout = setTimeout(() => {
+                    document.getElementById('color-feedback').className = '';
+                    buttons.forEach(b => b.disabled = false);
+                }, 1000);
+            }
+        }
+
+        const abcData = [
+            { letter: 'A', answer: '🍎', wrong: ['🐶','🚗','🎈'], name: 'Apel' },
+            { letter: 'B', answer: '🎈', wrong: ['🍎','🐱','🍓'], name: 'Balon' },
+            { letter: 'M', answer: '🚗', wrong: ['🐶','🍎','🐰'], name: 'Mobil' },
+            { letter: 'K', answer: '🐱', wrong: ['🍓','🐼','🚗'], name: 'Kucing' }
+        ];
+        let currentAbc = null;
+
+        function startAbcGame() {
+            const question = document.getElementById('abc-question');
+            const options = document.getElementById('abc-options');
+            
+            currentAbc = abcData[Math.floor(Math.random() * abcData.length)];
+            question.innerHTML = `Huruf <strong style="font-size:35px; color:#FF6B6B">${currentAbc.letter}</strong> untuk...`;
+
+            // Buat pilihan: 1 benar, 3 salah (diambil 3 dari array wrong)
+            let choices = [currentAbc.answer, ...currentAbc.wrong].slice(0, 4);
+            choices.sort(() => Math.random() - 0.5);
+
+            options.innerHTML = '';
+            choices.forEach(emoji => {
+                let btn = document.createElement('button');
+                btn.className = 'btn-option';
+                btn.style.backgroundColor = '#f1f2f6';
+                btn.style.color = '#333';
+                btn.style.boxShadow = '0 8px 0 #dfe4ea';
+                btn.style.height = '100px';
+                btn.innerText = emoji;
+                btn.onclick = function() { checkAbc(emoji, this); };
+                options.appendChild(btn);
+            });
+
+            const fb = document.getElementById('abc-feedback');
+            fb.className = ''; fb.innerText = '';
+            
+            // Bacakan pertanyaan Huruf
+            speak("Huruf " + currentAbc.letter + " untuk apa?");
+        }
+
+        function checkAbc(selectedEmoji, btn) {
+            if (btn.disabled) return;
+            const buttons = document.querySelectorAll('#abc-options .btn-option');
+            buttons.forEach(b => b.disabled = true);
+
+            if (selectedEmoji === currentAbc.answer) {
+                // Tampilkan dan Bacakan nama objek saat benar (Contoh: "Ya! Apel")
+                document.getElementById('abc-question').innerHTML = `Ya! <strong>${currentAbc.name}</strong>`;
+                showFeedback('abc', true, `Ya! ${currentAbc.name}`);
+                currentGameTimeout = setTimeout(startAbcGame, 2000);
+            } else {
+                showFeedback('abc', false);
+                currentGameTimeout = setTimeout(() => {
+                    document.getElementById('abc-feedback').className = '';
+                    buttons.forEach(b => b.disabled = false);
+                }, 1000);
+            }
+        }
+    </script>
+</body>
+</html>
