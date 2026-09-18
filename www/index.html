@@ -41,7 +41,6 @@
             align-items: center;
         }
 
-        /* --- Teks dan Menu --- */
         .school-logo {
             font-size: clamp(60px, 15vh, 120px);
             margin-top: 5vh;
@@ -98,7 +97,6 @@
             margin-right: clamp(10px, 2.5vh, 20px);
         }
 
-        /* --- Tambahan: Tombol Suara Ulang & Versi --- */
         .btn-speak {
             background-color: #FFA500;
             color: white;
@@ -124,7 +122,6 @@
             font-weight: bold;
         }
 
-        /* --- Kontainer Game --- */
         .game-view {
             display: none;
             width: 100%;
@@ -216,7 +213,7 @@
             font-size: clamp(18px, 3vh, 28px);
             font-weight: bold;
             min-height: 4vh;
-            margin-top: 5vh; /* Ruang lega untuk teks benar/salah */
+            margin-top: 5vh;
             text-align: center;
             width: 100%;
         }
@@ -238,7 +235,6 @@
             <button class="btn-menu btn-letter" onclick="openGame('letter')">
                 <span class="btn-icon">abc</span> Tebak Huruf
             </button>
-            <!-- Auto Versioning dari GitHub Actions -->
             <div class="version-info">Versi 1.0.0</div> 
         </div>
 
@@ -277,7 +273,7 @@
     </div>
 
     <script>
-        /* --- STREAMING_CHUNK:Initializing audio and speech synthesis logic... --- */
+        /* --- STREAMING_CHUNK:Initializing audio synthesis and event handlers... --- */
         let audioCtx = null;
 
         function playSound(type) {
@@ -340,7 +336,6 @@
             if (currentLetterData) speak(`Huruf ${currentLetterData.letter} untuk apa?`);
         }
 
-        /* --- STREAMING_CHUNK:Defining navigation and game event handlers... --- */
         function openGame(gameType) {
             document.getElementById('main-menu').style.display = 'none';
             document.getElementById('btn-back').style.display = 'block';
@@ -521,7 +516,7 @@
                 playSound('correct');
                 feedbackLetter.style.color = "#32CD32";
                 feedbackLetter.innerText = `Benar! ${currentLetterData.letter} untuk ${currentLetterData.word}! 🎉`;
-                speak(`Ya! ${currentLiteral = currentLetterData.letter} untuk ${currentLetterData.word}!`);
+                speak(`Ya! ${currentLetterData.letter} untuk ${currentLetterData.word}!`);
                 setTimeout(startGameLetter, 3000);
             } else {
                 playSound('wrong');
